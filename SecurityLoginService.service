@@ -1,0 +1,13 @@
+[Unit]
+Description=SecurityLoginService
+
+[Service]
+WorkingDirectory=/root/IDMReporter/SecurityLoginService
+ExecStart=/usr/bin/java -javaagent:jmx_prometheus_javaagent-0.17.2.jar=7079:jmx_exporter_config.yml -jar SecurityLoginService.jar
+User=root
+Type=simple
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
