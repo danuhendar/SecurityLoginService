@@ -13,6 +13,9 @@ public class Main {
 			CheckThread t2 = new CheckThread();
 			t2.start();
 			
+			SuspendUserThread t3 = new SuspendUserThread();
+			t3.start();
+			
 			
 		}catch(Exception exc) {
 			exc.printStackTrace();

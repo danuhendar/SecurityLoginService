@@ -236,36 +236,37 @@ public class SecurityLoginService {
     		String tahun_bulan_tanggal = gf.get_tanggal_curdate().replaceAll("-", "");
             String nama_table_create = "transreport"+tahun_bulan_tanggal;
             
-    		String query = "SELECT v.*, \r\n"
-    				+ "	(SELECT GROUP_CONCAT(CHAT_ID) FROM idm_org_structure WHERE JABATAN = v.JABATAN_ATASAN AND LOCATION = v.LOCATION AND CHAT_ID IS NOT NULL AND CHAT_ID != '0' AND LENGTH(CHAT_ID) > 1 ) AS CHAT_ID_ATASAN\r\n"
-    				+ "	FROM (SELECT a.LOCATION,\r\n"
-    				+ "	a.NIK,\r\n"
-    				+ "	a.NAMA,\r\n"
-    				+ "	a.JABATAN,\r\n"
-    				+ "	a.BAGIAN,\r\n"
-    				+ "	a.CHAT_ID,\r\n"
-    				+ "	IF(a.JABATAN='SUPPORT_TOKO' AND LEFT(a.LOCATION,1)='G','SUPERVISOR_CABANG',\r\n"
-    				+ "		IF(a.JABATAN='SUPPORT_TOKO' AND LEFT(a.LOCATION,1)='R','SUPERVISOR_REGION',\r\n"
-    				+ "			IF(a.JABATAN='SUPERVISOR_CABANG','MANAGER_CABANG',\r\n"
-    				+ "				IF(a.JABATAN='SUPERVISOR_REGION','DEPUTI_MANAGER_REGION',\r\n"
-    				+ "					IF(a.JABATAN='DEPUTI_MANAGER_REGION','MANAGER_REGION',\r\n"
-    				+ "						IF(a.JABATAN='MANAGER_REGION','REGIONAL_MANAGER',\r\n"
-    				+ "							IF(a.JABATAN='EDP_HO','REGIONAL_MANAGER','MANAGER_EDP_HO')\r\n"
-    				+ "						)\r\n"
-    				+ "					)\r\n"
-    				+ "				)\r\n"
-    				+ "			)\r\n"
-    				+ "		)\r\n"
-    				+ "	 ) AS JABATAN_ATASAN,\r\n"
-    				+ "IFNULL((SELECT CONCAT(MAX(ADDTIME),'#',IP) AS LAST_LOGIN FROM "+nama_table_create+" WHERE TASK = 'LOGIN' AND CMD LIKE '"+nik_bawahan+"%' ORDER BY ROWID DESC LIMIT 0,1),':') AS LAST_LOGIN"
-    				+ "\r\n"
-    				+ "FROM idm_org_structure a\r\n"
-    				+ ") v\r\n"
-    				+ "WHERE v.NIK = '"+nik_bawahan+"'\r\n"
-    				+ ";";
+    		String query = "SELECT v.*,\r\n"
+    				+ "					(SELECT\r\n"
+    				+ "						GROUP_CONCAT(l.ID,\"|\",k.NAMA,\"|\",k.CHAT_ID) AS CHAT_ID_ATASAN\r\n"
+    				+ "						FROM m_struktur_jabatan l LEFT JOIN idm_org_structure k ON k.JABATAN=l.CONTENT \r\n"
+    				+ "						WHERE l.ID > v.ID\r\n"
+    				+ "							AND l.KODE = v.KODE\r\n"
+    				+ "							AND k.LOCATION = v.LOCATION\r\n"
+    				+ "							AND k.JABATAN NOT LIKE 'SUPPORT%'\r\n"
+    				+ "							AND k.CHAT_ID IS NOT NULL \r\n"
+    				+ "							AND k.CHAT_ID != '0' AND LENGTH(CHAT_ID) > 1\r\n"
+    				+ "							) AS CHAT_ID_ATASAN\r\n"
+    				+ "							\r\n"
+    				+ "    					FROM (SELECT a.LOCATION,\r\n"
+    				+ "    					a.NIK,\r\n"
+    				+ "    					a.NAMA,\r\n"
+    				+ "    					a.JABATAN,\r\n"
+    				+ "    					a.BAGIAN,\r\n"
+    				+ "    					a.CHAT_ID,\r\n"
+    				+ "    					b.ID,\r\n"
+    				+ "    					b.KODE,\r\n"
+    				+ "    					(SELECT CONTENT FROM m_struktur_jabatan WHERE ID > b.ID AND KODE =  LEFT(a.LOCATION,1) ORDER BY ID ASC LIMIT 0,1) AS JABATAN_ATASAN,\r\n"
+    				+ "    				IFNULL((SELECT CONCAT(MAX(ADDTIME),'#',IP) AS LAST_LOGIN FROM "+nama_table_create+" WHERE TASK = 'LOGIN' AND CMD LIKE '"+nik_bawahan+"%' ORDER BY ROWID DESC LIMIT 0,1),':') AS LAST_LOGIN\r\n"
+    				+ "    				\r\n"
+    				+ "    				FROM idm_org_structure a INNER JOIN m_struktur_jabatan b ON a.JABATAN=b.CONTENT\r\n"
+    				+ "    				) v\r\n"
+    				+ "    				WHERE v.NIK = '"+nik_bawahan+"'\r\n"
+    				+ "    				GROUP BY v.NIK\r\n"
+    				+ "    				;";
     		
     		System.out.println("query : "+query);
-    		String get_identitas_user = gf.GetTransReport(query, 9,false);
+    		String get_identitas_user = gf.GetTransReport(query, 11,false);
     		String sp_record[] = get_identitas_user.split("~");
     		System.out.println("Jumlah Data : "+sp_record.length);
     		JSONObject obj_command_for_bot = new JSONObject();
@@ -277,9 +278,11 @@ public class SecurityLoginService {
     			String res_jabatan = sp_field[3];
     			String res_bagian = sp_field[4];
     			String res_chat_id_user = sp_field[5];
-    			String res_jabatan_atasan = sp_field[6];
-    			String res_last_login = sp_field[7];
-    			String res_chat_id_atasan = "532860640";//sp_field[8];
+    			String res_id = sp_field[6];
+    			String res_kode = sp_field[7];
+    			String res_jabatan_atasan = sp_field[8];
+    			String res_last_login = sp_field[9];
+    			String res_chat_id_atasan = sp_field[10];
     			obj_command_for_bot.put("LOCATION", res_location);
     			obj_command_for_bot.put("NIK", res_nik);
     			obj_command_for_bot.put("NAMA", res_nama);
@@ -350,15 +353,17 @@ public class SecurityLoginService {
                                     String res_nik = obj_command.get("NIK").toString();
                                     String res_pass = obj_command.get("PASS").toString();
                                     
-                                    String ip_login = Parser_IP_ADDRESS;
+                                    String ip_login = "";
                                     
                                     String type = "";
                                     String via = "";
                                     if(Parser_HASIL.contains("DUPLICATE")) {
                                     	type = "DUPLICATE";
+                                    	ip_login = Parser_HASIL.split(":")[1].trim();
                                     }else if(Parser_HASIL.contains("REMOTE")) {
                                     	type = "REMOTE_LOGIN";
                                     	via = Parser_HASIL.split(":")[1];
+                                    	ip_login = Parser_IP_ADDRESS;
                                     }else {
                                     	type = "TIDAK DIKETAHUI";
                                     }
