@@ -361,7 +361,7 @@ public class SecurityLoginService {
                                     	type = "DUPLICATE";
                                     	ip_login = Parser_HASIL.split(":")[1].trim();
                                     }else if(Parser_HASIL.contains("REMOTE")) {
-                                    	type = "REMOTE_LOGIN";
+                                    	type = "REMOTELOGIN";
                                     	via = Parser_HASIL.split(":")[1];
                                     	ip_login = Parser_IP_ADDRESS;
                                     }else {

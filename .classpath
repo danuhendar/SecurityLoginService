@@ -8,5 +8,9 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="jmx_prometheus_javaagent-0.17.2.jar"/>
 	<classpathentry kind="lib" path="SecurityLoginService.jar"/>
+	<classpathentry kind="lib" path="D:/Git/LIB/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="D:/Git/LIB/mongo-java-driver-3.12.8.jar"/>
+	<classpathentry kind="lib" path="D:/Git/LIB/mysql-connector-java-5.1.6-bin.jar"/>
+	<classpathentry kind="lib" path="D:/Git/LIB/org.eclipse.paho.client.mqttv3-1.1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
