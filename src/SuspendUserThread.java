@@ -12,7 +12,7 @@ public class SuspendUserThread extends Thread{
 	        	   
 	        	   int jam = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 	        	   int menit = Calendar.getInstance().get(Calendar.MINUTE);
-	        	   if((jam == 8 && menit <= 45)) {
+	        	   if((jam == 22 && menit <= 5)) {
 	        		  act.Run();
 	        	   }else {
 	        		   System.out.println("Tidak melakukan rekap, Belum Jadwalnya !!!");
