@@ -237,6 +237,7 @@ public class SuspendUserActivity {
 					+ "	WHERE (b.NIK IS NULL OR DATE(LAST_AKSES) = '"+get_min_date+"')\r\n"
 					+ "	AND a.NAMA NOT LIKE '%SIMULASI%'\r\n"
 					+ "	AND a.LOCATION != 'HO'\r\n"
+					+ "	AND a.NIK NOT IN('2023000001','2023000002','2023000003','2023000004','2024000001','2024000002','2024000003','2024000004')\r\n"
 					+ "	ORDER BY a.LOCATION\r\n"
 					+ "	;";
 			
