@@ -259,13 +259,13 @@ public class SecurityLoginService {
     				+ "    					(SELECT CONTENT FROM m_struktur_jabatan WHERE ID > b.ID AND KODE =  LEFT(a.LOCATION,1) ORDER BY ID ASC LIMIT 0,1) AS JABATAN_ATASAN,\r\n"
     				+ "    				IFNULL((SELECT CONCAT(MAX(ADDTIME),'#',IP) AS LAST_LOGIN FROM "+nama_table_create+" WHERE TASK = 'LOGIN' AND CMD LIKE '"+nik_bawahan+"%' ORDER BY ROWID DESC LIMIT 0,1),':') AS LAST_LOGIN\r\n"
     				+ "    				\r\n"
-    				+ "    				FROM idm_org_structure a INNER JOIN m_struktur_jabatan b ON a.JABATAN=b.CONTENT\r\n"
+    				+ "    				FROM idm_org_structure a INNER JOIN m_struktur_jabatan b ON a.JABATAN=b.CONTENT AND LEFT(a.LOCATION,1)=b.KODE\r\n"
     				+ "    				) v\r\n"
     				+ "    				WHERE v.NIK = '"+nik_bawahan+"'\r\n"
     				+ "    				GROUP BY v.NIK\r\n"
     				+ "    				;";
     		
-    		System.out.println("query : "+query);
+    		//System.out.println("query : "+query);
     		String get_identitas_user = gf.GetTransReport(query, 11,false);
     		String sp_record[] = get_identitas_user.split("~");
     		System.out.println("Jumlah Data : "+sp_record.length);
